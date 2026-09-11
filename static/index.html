@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>АИС Расчет заработной платы</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> АИС Расчет заработной платы</h1>
+            <p class="subtitle">Система расчета заработной платы сотрудников</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('quick-calc')">Быстрый расчет</button>
+            <button class="tab-button" onclick="switchTab('employees')">Сотрудники</button>
+            <button class="tab-button" onclick="switchTab('history')">История расчетов</button>
+            <button class="tab-button" onclick="switchTab('statistics')">Статистика</button>
+        </div>
+
+        <!-- Вкладка быстрого расчета -->
+        <div id="quick-calc" class="tab-content active">
+            <div class="card">
+                <h2><i class="fas fa-bolt"></i> Быстрый расчет зарплаты</h2>
+                <p>Рассчитайте зарплату без сохранения данных</p>
+                
+                <div class="form-group">
+                    <label for="rate">Ставка в час (руб.):</label>
+                    <input type="number" id="rate" step="0.01" min="0" value="500">
+                </div>
+                
+                <div class="form-group">
+                    <label for="hours">Отработано часов:</label>
+                    <input type="number" id="hours" step="0.5" min="0" value="160">
+                </div>
+                
+                <div class="form-group">
+                    <label for="bonus">Премия (руб.):</label>
+                    <input type="number" id="bonus" step="0.01" min="0" value="5000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="deductions">Вычеты (руб.):</label>
+                    <input type="number" id="deductions" step="0.01" min="0" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tax-rate">Ставка НДФЛ (%):</label>
+                    <input type="number" id="tax-rate" min="0" max="100" value="13">
+                </div>
+                
+                <button onclick="calculateQuick()" class="btn btn-primary">
+                    <i class="fas fa-calculator"></i> Рассчитать
+                </button>
+                
+                <div id="quick-result" class="result-card" style="display: none;">
+                    <h3>Результаты расчета:</h3>
+                    <div id="quick-result-details"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка сотрудников -->
+        <div id="employees" class="tab-content">
+            <div class="card">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Управление сотрудниками</h2>
+                    <button onclick="showAddEmployeeForm()" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Добавить сотрудника
+                    </button>
+                </div>
+                
+                <!-- Форма добавления/редактирования сотрудника -->
+                <div id="employee-form-container" style="display: none;">
+                    <h3 id="form-title">Добавить нового сотрудника</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emp-name">ФИО:</label>
+                            <input type="text" id="emp-name" placeholder="Иванов Иван Иванович">
+                        </div>
+                        <div class="form-group">
+                            <label for="emp-position">Должность:</label>
+                            <input type="text" id="emp-position" placeholder="Менеджер">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emp-rate">Ставка в час (руб.):</label>
+                            <input type="number" id="emp-rate" step="0.01" min="0" value="500">
+                        </div>
+                        <div class="form-group">
+                            <label for="emp-hours">Отработано часов:</label>
+                            <input type="number" id="emp-hours" step="0.5" min="0" value="160">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="emp-bonus">Премия (руб.):</label>
+                            <input type="number" id="emp-bonus" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="emp-deductions">Вычеты (руб.):</label>
+                            <input type="number" id="emp-deductions" step="0.01" min="0" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="emp-tax-rate">Ставка НДФЛ (%):</label>
+                        <input type="number" id="emp-tax-rate" min="0" max="100" value="13">
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button onclick="saveEmployee()" class="btn btn-primary" id="save-btn">
+                            <i class="fas fa-save"></i> Сохранить
+                        </button>
+                        <button onclick="cancelEmployeeForm()" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Отмена
+                        </button>
+                    </div>
+                    <input type="hidden" id="emp-id" value="">
+                </div>
+                
+                <!-- Список сотрудников -->
+                <div id="employees-list">
+                    <h3>Список сотрудников</h3>
+                    <div id="employees-container">
+                        <!-- Сотрудники будут загружены здесь -->
+                        <div class="loading">Загрузка сотрудников...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка истории расчетов -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-history"></i> История расчетов зарплаты</h2>
+                <p>Последние расчеты заработной платы</p>
+                
+                <button onclick="loadSalaryHistory()" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Обновить историю
+                </button>
+                
+                <div id="history-container">
+                    <div class="loading">Загрузка истории расчетов...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка статистики -->
+        <div id="statistics" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-chart-bar"></i> Статистика</h2>
+                <p>Общая статистика по расчетам зарплаты</p>
+                
+                <button onclick="loadStatistics()" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> Обновить статистику
+                </button>
+                
+                <div id="stats-container">
+                    <div class="loading">Загрузка статистики...</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>АИС Расчет заработной платы &copy; 2023 | FastAPI + HTML/CSS/JS</p>
+        </footer>
+    </div>
+
+    <!-- Модальное окно для расчета зарплаты -->
+    <div id="salaryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Расчет зарплаты</h2>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
